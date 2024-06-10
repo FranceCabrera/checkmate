@@ -8,62 +8,71 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.checkmateapplication.R;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class StudentLogin extends AppCompatActivity {
 
+    private EditText emailField;
+    private EditText passwordField;
+    private Button btnLogin;
+    private Button btnSignUp;
     private DatabaseHelper dbHelper;
-    private EditText txtLogStudUser, txtLogStudPass;
-    private Button btnStudLogin, btnSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_login);
 
-        dbHelper = new DatabaseHelper(this);
-        txtLogStudUser = findViewById(R.id.txtLogStudUser);
-        txtLogStudPass = findViewById(R.id.txtLogStudPass);
-        btnStudLogin = findViewById(R.id.btnStudLogin);
+        emailField = findViewById(R.id.txtLogStudUser);
+        passwordField = findViewById(R.id.txtLogStudPass);
+        btnLogin = findViewById(R.id.btnStudLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
 
-        btnStudLogin.setOnClickListener(new View.OnClickListener() {
+        dbHelper = new DatabaseHelper(this);
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loginStudent();
+                String email = emailField.getText().toString().trim();
+                String password = passwordField.getText().toString().trim();
+
+                if (email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(StudentLogin.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (authenticateUser(email, password)) {
+                    // Navigate to student dashboard or main activity
+                    Intent intent = new Intent(StudentLogin.this, HomeStud.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(StudentLogin.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the SignUpActivity
-                Intent intent = new Intent(StudentLogin.this, SignUpActivity.class);
+                Intent intent = new Intent(StudentLogin.this, StudentSignUp.class);
                 startActivity(intent);
             }
         });
     }
 
-    private void loginStudent() {
-        String email = txtLogStudUser.getText().toString();
-        String password = txtLogStudPass.getText().toString();
-
+    private boolean authenticateUser(String email, String password) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(DatabaseHelper.TABLE_STUDENTS,
-                new String[]{DatabaseHelper.COLUMN_ID},
-                DatabaseHelper.COLUMN_EMAIL + "=? AND " + DatabaseHelper.COLUMN_PASSWORD + "=?",
-                new String[]{email, password},
-                null, null, null);
+        String[] columns = { DatabaseHelper.COLUMN_ID };
+        String selection = DatabaseHelper.COLUMN_EMAIL + "=? AND " + DatabaseHelper.COLUMN_PASSWORD + "=? AND " + DatabaseHelper.COLUMN_ROLE + "=?";
+        String[] selectionArgs = { email, password, "student" };
+        Cursor cursor = db.query(DatabaseHelper.TABLE_USERS, columns, selection, selectionArgs, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-            cursor.close();
-            Intent intent = new Intent(StudentLogin.this, HomeStud.class);
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-        }
+        int cursorCount = cursor.getCount();
+        cursor.close();
+        db.close();
+
+        return cursorCount > 0;
     }
 }

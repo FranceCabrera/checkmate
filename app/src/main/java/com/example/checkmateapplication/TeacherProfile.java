@@ -73,7 +73,11 @@ public class TeacherProfile extends AppCompatActivity {
             return;
         }
 
-        boolean isInserted = dbHelper.addTeacherProfile(email, teacherID, name);
+        // You need to set the gender and password or retrieve them from somewhere
+        String gender = "Male"; // Example gender
+        String password = "password"; // Example password
+
+        boolean isInserted = dbHelper.addTeacherProfile(email, teacherID, name, password, gender);
         if (isInserted) {
             Toast.makeText(this, "Profile Submitted Successfully", Toast.LENGTH_SHORT).show();
             // Start TeachersDash activity
@@ -84,4 +88,5 @@ public class TeacherProfile extends AppCompatActivity {
             Toast.makeText(this, "Failed to Submit Profile", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

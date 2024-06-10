@@ -8,62 +8,81 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.appcompat.app.AppCompatActivity;
 
 public class TeacherLogin extends AppCompatActivity {
 
+    private EditText editTextEmail, editTextPassword;
+    private Button btnSignIn;
+    private Button btnSignUp;
     private DatabaseHelper dbHelper;
-    private EditText txtLogTeachUser, txtLogTeachPass;
-    private Button btnTeachLog, btnSignUp;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teacher_login);
 
+        dbHelper = new DatabaseHelper(this); // Initialize dbHelper
 
-        txtLogTeachUser = findViewById(R.id.txtLogTeachUser);
-        txtLogTeachPass = findViewById(R.id.txtLogTeachPass);
-        btnTeachLog = findViewById(R.id.btnTeachLog);
+        editTextEmail = findViewById(R.id.txtLogTeachUser);
+        editTextPassword = findViewById(R.id.txtLogTeachPass);
         btnSignUp = findViewById(R.id.btnSignUp);
+        btnSignIn = findViewById(R.id.btnTeachLog);
 
-        btnTeachLog.setOnClickListener(new View.OnClickListener() {
-            @Override
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loginTeacher();
+                String email = editTextEmail.getText().toString().trim();
+                String password = editTextPassword.getText().toString().trim();
+
+                if (email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(TeacherLogin.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (authenticateUser(email, password)) {
+                    // Navigate to teacher dashboard
+                    Intent intent = new Intent(TeacherLogin.this, TeachersDash.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(TeacherLogin.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to SignUpActivity
-                Intent intent = new Intent(TeacherLogin.this, SignUpActivity.class);
+                // Handle sign-up functionality
+                Intent intent = new Intent(TeacherLogin.this, TeacherSignUp.class);
+                startActivity(intent);
+            }
+        });
+
+
+        btnSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle sign-up functionality
+                Intent intent = new Intent(TeacherLogin.this, TeacherSignUp.class);
                 startActivity(intent);
             }
         });
     }
 
-    private void loginTeacher() {
-        String email = txtLogTeachUser.getText().toString();
-        String password = txtLogTeachPass.getText().toString();
-
+    private boolean authenticateUser(String email, String password) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(DatabaseHelper.TABLE_TEACHERS,
-                new String[]{DatabaseHelper.COLUMN_ID},
-                DatabaseHelper.COLUMN_EMAIL + "=? AND " + DatabaseHelper.COLUMN_PASSWORD + "=?",
-                new String[]{email, password},
-                null, null, null);
+        String[] columns = {DatabaseHelper.COLUMN_ID};
+        String selection = DatabaseHelper.COLUMN_EMAIL + "=? AND " + DatabaseHelper.COLUMN_PASSWORD + "=? AND " + DatabaseHelper.COLUMN_ROLE + "=?";
+        String[] selectionArgs = {email, password, "teacher"}; // Change "student" to "teacher"
+        Cursor cursor = db.query(DatabaseHelper.TABLE_USERS, columns, selection, selectionArgs, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-            cursor.close();
-            // Navigate to TeachersDash activity
-            Intent intent = new Intent(TeacherLogin.this, TeachersDash.class);
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-        }
+        int cursorCount = cursor.getCount();
+        cursor.close();
+        db.close();
+
+        return cursorCount > 0;
     }
 }

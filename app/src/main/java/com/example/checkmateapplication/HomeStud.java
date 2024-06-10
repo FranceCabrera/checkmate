@@ -28,6 +28,9 @@ public class HomeStud extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private String userEmail;
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,16 +48,18 @@ public class HomeStud extends AppCompatActivity {
         classAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, classList);
         listViewClasses.setAdapter(classAdapter);
 
+        // Retrieve user info from SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userName = preferences.getString("name", "User");
+        userEmail = preferences.getString("email", "");
+        String userSection = preferences.getString("section", "");
+        String userId = preferences.getString("studentId", "");
 
-
-        String userName = dbHelper.getUserName(userEmail);
-        if (userName == null) {
-            Toast.makeText(this, "Error: User not found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+        if (userName != null) {
+            textViewUserName.setText("Welcome, " + userName);
+        } else {
+            textViewUserName.setText("Welcome, User");
         }
-
-        textViewUserName.setText("Welcome, " + userName);
 
         btnAddClass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,16 +82,16 @@ public class HomeStud extends AppCompatActivity {
             }
         });
 
-        listViewClasses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String classCode = classList.get(position);
-                Intent intent = new Intent(HomeStud.this, AttendanceChecker.class);
-                intent.putExtra("classCode", classCode);
-                intent.putExtra("email", userEmail);
-                startActivity(intent);
-            }
-        });
+//        listViewClasses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                String classCode = classList.get(position);
+//                Intent intent = new Intent(HomeStud.this, AttendanceChecker.class);
+//                intent.putExtra("classCode", classCode);
+//                intent.putExtra("email", userEmail);
+//                startActivity(intent);
+//            }
+//        });
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -109,4 +114,5 @@ public class HomeStud extends AppCompatActivity {
         editTextClassCode.setText("");
         Toast.makeText(this, "Class added", Toast.LENGTH_SHORT).show();
     }
+
 }

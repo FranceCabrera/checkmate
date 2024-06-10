@@ -13,6 +13,12 @@
         android:theme="@style/Theme.CheckMateApplication"
         tools:targetApi="31">
         <activity
+            android:name=".StudentSignUp"
+            android:exported="false" />
+        <activity
+            android:name=".TeacherSignUp"
+            android:exported="false" />
+        <activity
             android:name=".AttendanceChecker"
             android:exported="false" />
         <activity

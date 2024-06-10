@@ -1,16 +1,14 @@
 package com.example.checkmateapplication;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.checkmateapplication.R;
-
 import java.util.ArrayList;
 
 public class TeachersDash extends AppCompatActivity {
@@ -21,6 +19,9 @@ public class TeachersDash extends AppCompatActivity {
     private ArrayList<String> classList;
     private ArrayAdapter<String> classAdapter;
     private DatabaseHelper dbHelper;
+    private String loggedInTeacherEmail;
+    private int loggedInTeacherId; // Add variable to store teacher ID
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,51 +40,45 @@ public class TeachersDash extends AppCompatActivity {
         classAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, classList);
         listViewClasses.setAdapter(classAdapter);
 
-        btnAddClass.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addClass();
+        preferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        loggedInTeacherEmail = preferences.getString("email", "");
+        loggedInTeacherId = dbHelper.getTeacherIdByEmail(loggedInTeacherEmail); // Get teacher ID
+
+        btnAddClass.setOnClickListener(v -> {
+            String courseName = editTextCourseName.getText().toString().trim();
+            String courseTime = editTextCourseTime.getText().toString().trim();
+
+            if (!courseName.isEmpty() && !courseTime.isEmpty()) {
+                String classCode = dbHelper.generateClassCode();
+
+                if (loggedInTeacherId != -1) {
+                    boolean result = dbHelper.addClass(courseName, classCode, loggedInTeacherId, courseTime); // Use loggedInTeacherId
+                    if (result) {
+                        Toast.makeText(TeachersDash.this, "Class added successfully", Toast.LENGTH_SHORT).show();
+                        classList.add("Code: " + classCode + ", Name: " + courseName + ", Time: " + courseTime);
+                        classAdapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(TeachersDash.this, "Failed to add class", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(TeachersDash.this, "Teacher not found", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(TeachersDash.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             }
         });
 
-        btnViewClasses.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewClasses();
+        // Filter classes based on teacher ID when viewing classes
+        btnViewClasses.setOnClickListener(v -> {
+            if (loggedInTeacherId != -1) {
+                // Clear the list before populating it again
+                classList.clear();
+                ArrayList<String> teacherClasses = dbHelper.getTeacherClasses(loggedInTeacherId);
+                classList.addAll(teacherClasses);
+                classAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(TeachersDash.this, "Teacher not found", Toast.LENGTH_SHORT).show();
             }
         });
-
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Logout and redirect to Main Activity
-                finish();
-            }
-        });
-    }
-
-    private void addClass() {
-        String courseName = editTextCourseName.getText().toString();
-        String courseTime = editTextCourseTime.getText().toString();
-        if (courseName.isEmpty() || courseTime.isEmpty()) {
-            Toast.makeText(this, "Please enter course name and time", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String classCode = dbHelper.generateClassCode();
-        boolean isInserted = dbHelper.addClass(classCode, courseName, courseTime);
-        if (isInserted) {
-            Toast.makeText(this, "Class added successfully", Toast.LENGTH_SHORT).show();
-            editTextCourseName.setText("");
-            editTextCourseTime.setText("");
-        } else {
-            Toast.makeText(this, "Failed to add class", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void viewClasses() {
-        classList.clear();
-        classList.addAll(dbHelper.getAllClasses());
-        classAdapter.notifyDataSetChanged();
     }
 }
