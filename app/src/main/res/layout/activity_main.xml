@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/main"
     tools:context=".MainActivity">
 
     <TextView
@@ -35,10 +36,8 @@
 
     <Button
         android:id="@+id/btnTeach"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CustomButton"
         android:text="I am a Teacher"
-        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/btnStudent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,10 +46,8 @@
 
     <Button
         android:id="@+id/btnStudent"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CustomButton"
         android:text="I am a Student"
-        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

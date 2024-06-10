@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/student"
     tools:context=".StudentProfileActivity">
 
     <TextView
@@ -28,7 +29,7 @@
         android:textAlignment="center"
         android:textSize="34sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/txtWriteStudName"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -40,6 +41,7 @@
         android:layout_marginBottom="4dp"
         android:ems="10"
         android:hint="Name"
+        android:textColorHint="@color/black"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/txtWriteStudNum"
         app:layout_constraintEnd_toEndOf="parent"
@@ -53,6 +55,7 @@
         android:layout_marginBottom="4dp"
         android:ems="10"
         android:hint="Student Number"
+        android:textColorHint="@color/black"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/txtWriteSection"
         app:layout_constraintEnd_toEndOf="parent"
@@ -66,6 +69,7 @@
         android:layout_marginBottom="4dp"
         android:ems="10"
         android:hint="Section"
+        android:textColorHint="@color/black"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/chkMale"
         app:layout_constraintEnd_toEndOf="parent"
@@ -98,6 +102,7 @@
         android:layout_height="50dp"
         android:layout_marginBottom="80dp"
         android:text="SUBMIT"
+        style="@style/CustomButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.526"
